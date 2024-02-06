@@ -1,6 +1,6 @@
 # xxHash64
 
-A fast, simple xxHash64 implementation in TypeScript/WASM.
+A fast, simple xxHash64 (and XXH3) implementation in TypeScript/WASM.
 
 ## Example
 
@@ -22,6 +22,11 @@ h.reset().update('xyz').digest('hex') // #=> "a13c835b4648bafe"
 
 // Combine reset/update/digest in one call:
 h.hash('xyz', 'hex') // #=> "a13c835b4648bafe"
+
+// Improved XXH3 64-bit algorithm...
+let h3 = await XXH64.create3()
+h3.hash('xyz', 'hex') // #=> "1f1f416f65d27662"
+h3.hash('abc', 'bigint') // #=> 5780703864653066104n
 ```
 
 ## References
