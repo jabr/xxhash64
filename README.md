@@ -11,21 +11,21 @@ let h = await XXH64.create()
 h.update('abc')
 h.digest() // #=> Uint8Array(8) [ 68, 188, ... ]
 h.digest('bigint') // #=> 11027476751619767364n
-h.digest('hex') // #=> "990977adf52cbc44"
+h.digest('hex') // #=> "44bc2cf5ad770999"
 
 // Continue updating/digesting a hash...
-h.update('xyz').digest('hex') // #=> "8309bfe8354a4319"
-h.update('xyz').digest('hex') // #=> "0f96ca82f6748457"
+h.update('xyz').digest('hex') // #=> "19434a35e8bf0983"
+h.update('xyz').digest('hex') // #=> "578474f682ca960f"
 
 // Reset to generate a new hash:
-h.reset().update('xyz').digest('hex') // #=> "a13c835b4648bafe"
+h.reset().update('xyz').digest('hex') // #=> "feba48465b833ca1"
 
 // Combine reset/update/digest in one call:
-h.hash('xyz', 'hex') // #=> "a13c835b4648bafe"
+h.hash('xyz', 'hex') // #=> "feba48465b833ca1"
 
 // Improved XXH3 64-bit algorithm...
 let h3 = await XXH64.create3()
-h3.hash('xyz', 'hex') // #=> "1f1f416f65d27662"
+h3.hash('xyz', 'hex') // #=> "6276d2656f411f1f"
 h3.hash('abc', 'bigint') // #=> 5780703864653066104n
 ```
 

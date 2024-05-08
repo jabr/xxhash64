@@ -60,13 +60,17 @@ class XXHasher implements Hasher {
         this.internal.Hash_Final()
         const length = DIGEST_DATA.byteLength
 
-        if (format === 'bigint' || format === 'hex') {
-            // read digest bytes as a little-endian uint64
+        if (format === 'bigint') {
             DIGEST_DATA.set(this.memory.subarray(0, length))
-            const digest = DIGEST_VIEW.getBigUint64(0, true)
-            if (format === 'bigint') return digest
+            // read digest bytes as a little-endian uint64
+            return DIGEST_VIEW.getBigUint64(0, true)
+        }
+
+        if (format === 'hex') {
             // return digest as a hex string
-            return digest.toString(16).padStart(length * 2, '0')
+            return [...this.memory.subarray(0, length)].map(
+                b => b.toString(16).padStart(2, '0')
+            ).join('')
         }
 
         // return a copy of the raw digest bytes
@@ -92,23 +96,24 @@ const XXHash3 = WebAssembly.compile(
     Uint8Array.from(atob(WASM3), char => char.charCodeAt(0))
 )
 
-function generateSeed(data: Iterable<any>): Uint8Array {
+type SeedData = Iterable<unknown>
+function generateSeed(data: SeedData): Uint8Array {
     const seed = new Uint8Array(SEED_LENGTH)
     let index = 0
-    for (const item of data) seed[index++ % SEED_LENGTH] ^= item
+    for (const item of data) seed[index++ % SEED_LENGTH] ^= item as number
     return seed
 }
 
-export async function create(seedData?: Iterable<any>): Promise<Hasher> {
-    let instance = await WebAssembly.instantiate(await XXHash64)
-    let seed = DEFAULT_SEED
-    if (seedData) seed = generateSeed(seedData)
+async function construct(code: WebAssembly.Module, seedData?: SeedData): Promise<Hasher> {
+    const instance = await WebAssembly.instantiate(code)
+    const seed = seedData ? generateSeed(seedData) : DEFAULT_SEED
     return new XXHasher(instance, seed)
 }
 
-export async function create3(seedData?: Iterable<any>): Promise<Hasher> {
-    let instance = await WebAssembly.instantiate(await XXHash3)
-    let seed = DEFAULT_SEED
-    if (seedData) seed = generateSeed(seedData)
-    return new XXHasher(instance, seed)
+export async function create(seedData?: SeedData): Promise<Hasher> {
+    return construct(await XXHash64, seedData)
+}
+
+export async function create3(seedData?: SeedData): Promise<Hasher> {
+    return construct(await XXHash3, seedData)
 }

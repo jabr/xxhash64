@@ -1,7 +1,7 @@
 import { assert, assertEquals } from "https://deno.land/std/testing/asserts.ts"
 import { describe, before, it } from "https://deno.land/x/spec/mod.ts"
 
-import { Hasher, create } from "./mod.ts"
+import { Hasher, create, create3 } from "./mod.ts"
 
 describe('xxHash64', () => {
     describe('Hasher', () => {
@@ -38,14 +38,14 @@ describe('xxHash64', () => {
         describe('with custom seed data', () => {
             it('generates different hashes', async ctx => {
                 const dh = await create()
-                assertEquals(dh.hash('abc', 'hex'), '990977adf52cbc44')
+                assertEquals(dh.hash('abc', 'hex'), '44bc2cf5ad770999')
                 const ch = await create(Uint8Array.of(1,2,3,4,5,6,7,8))
-                assertEquals(ch.hash('abc', 'hex'), 'ae62c0ec1c209b07')
+                assertEquals(ch.hash('abc', 'hex'), '079b201cecc062ae')
             })
 
             it('accepts any iterable', async ctx => {
                 const h = await create('12345678')
-                assertEquals(h.hash('abc', 'hex'), 'ae62c0ec1c209b07')
+                assertEquals(h.hash('abc', 'hex'), '079b201cecc062ae')
             })
         })
     })
@@ -61,11 +61,11 @@ describe('xxHash64', () => {
             })
 
             it('sets the instance back to the initial state', ctx => {
-                assertEquals(ctx.h.digest('hex'), '99e9d85137db46ef')
+                assertEquals(ctx.h.digest('hex'), 'ef46db3751d8e999')
                 ctx.h.update('x')
-                assertEquals(ctx.h.digest('hex'), '2311048396c0805c')
+                assertEquals(ctx.h.digest('hex'), '5c80c09683041123')
                 ctx.h.reset()
-                assertEquals(ctx.h.digest('hex'), '99e9d85137db46ef')
+                assertEquals(ctx.h.digest('hex'), 'ef46db3751d8e999')
             })
         })
 
@@ -76,17 +76,17 @@ describe('xxHash64', () => {
 
             it('accepts a Uint8Array', ctx => {
                 ctx.h.update(Uint8Array.of(97, 98, 99))
-                assertEquals(ctx.h.digest('hex'), '990977adf52cbc44')
+                assertEquals(ctx.h.digest('hex'), '44bc2cf5ad770999')
             })
 
             it('accepts a string', ctx => {
                 ctx.h.update('abc')
-                assertEquals(ctx.h.digest('hex'), '990977adf52cbc44')
+                assertEquals(ctx.h.digest('hex'), '44bc2cf5ad770999')
             })
 
             it('can be called incrementally', ctx => {
                 ctx.h.update('a').update('b').update('c')
-                assertEquals(ctx.h.digest('hex'), '990977adf52cbc44')
+                assertEquals(ctx.h.digest('hex'), '44bc2cf5ad770999')
             })
         })
 
@@ -98,7 +98,7 @@ describe('xxHash64', () => {
             it('defaults to returning a "raw" Uint8Array', ctx => {
                 assertEquals(
                     [ ...ctx.h.digest() ],
-                    [ 254, 186, 72, 70, 91, 131, 60, 161 ]
+                    [ 0xfe, 0xba, 0x48, 0x46, 0x5b, 0x83, 0x3c, 0xa1 ]
                 )
             })
 
@@ -107,13 +107,13 @@ describe('xxHash64', () => {
             })
 
             it('can return a "hex" string', ctx => {
-                assertEquals(ctx.h.digest('hex'), 'a13c835b4648bafe')
+                assertEquals(ctx.h.digest('hex'), 'feba48465b833ca1')
             })
 
             it('can be called multiple times without reseting', ctx => {
                 ctx.h.update('foo')
                 assertEquals(ctx.h.digest('bigint'), 12479437785964555199n)
-                assertEquals(ctx.h.digest('hex'), 'ad2fde8c25012bbf')
+                assertEquals(ctx.h.digest('hex'), 'bf2b01258cde2fad')
             })
         })
 
@@ -131,8 +131,24 @@ describe('xxHash64', () => {
 
             it('takes an optional argument for the digest format', ctx => {
                 assertEquals(ctx.h.hash('mno', 'bigint'), 6659114744950432556n)
-                assertEquals(ctx.h.hash('mno', 'hex'), '5c69ed943b56232c')
+                assertEquals(ctx.h.hash('mno', 'hex'), '2c23563b94ed695c')
             })
+        })
+    })
+
+    describe('#create3', () => {
+        before(async ctx => {
+            ctx.h = await create3()
+        })
+
+        it('creates a Hasher using the XXH3 algorithm', ctx => {
+            assertEquals(
+                [ ...ctx.h.hash('mno') ],
+                [ 0xe0, 0x46, 0xa7, 0x2c, 0xe8, 0x49, 0x75, 0x47 ]
+            )
+            assertEquals(ctx.h.hash('mno', 'hex'), 'e046a72ce8497547')
+            assertEquals(ctx.h.hash('xyz', 'hex'), '6276d2656f411f1f')
+            assertEquals(ctx.h.hash('abc', 'bigint'), 5780703864653066104n)
         })
     })
 })
