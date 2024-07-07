@@ -27,6 +27,10 @@ h.hash('xyz', 'hex') // #=> "feba48465b833ca1"
 let h3 = await XXH64.create3()
 h3.hash('xyz', 'hex') // #=> "6276d2656f411f1f"
 h3.hash('abc', 'bigint') // #=> 5780703864653066104n
+
+// Reseeding...
+const seed = new Uint8Array([1,0,0,0,0,0,0,0])
+h3.reseed(seed).update('xyz').digest('hex') // #=> d819f2585dc69106
 ```
 
 ## References

@@ -151,4 +151,42 @@ describe('xxHash64', () => {
             assertEquals(ctx.h.hash('abc', 'bigint'), 5780703864653066104n)
         })
     })
+
+    describe('XXH3 instance', () => {
+        before(async ctx => {
+            ctx.h = await create3()
+        })
+
+        describe('#reseed', () => {
+            it('uses the new seed on subsequent resets and hashes', ctx => {
+                assertEquals(
+                    ctx.h.reset().update('mno').digest('bigint'),
+                    5149103010498430688n
+                )
+                ctx.h.reseed(new Uint8Array([0,0,0,0,0,0,0,1]))
+                assertEquals(
+                    ctx.h.reset().update('mno').digest('bigint'),
+                    13140839517555495589n
+                )
+                ctx.h.reseed(new Uint8Array([1,0,0,0,0,0,0,0]))
+                assertEquals(
+                    ctx.h.reset().update('mno').digest('bigint'),
+                    5209252012589928780n
+                )
+                ctx.h.reseed(new Uint8Array([0,0,0,0,0,0,0,0]))
+                assertEquals(
+                    ctx.h.reset().update('mno').digest('bigint'),
+                    5149103010498430688n
+                )
+            })
+
+            it('resets the hasher with the need seed', ctx => {
+                const seed = new Uint8Array([1,0,0,0,0,0,0,0])
+                assertEquals(
+                    ctx.h.reseed(seed).update('mno').digest('bigint'),
+                    5209252012589928780n
+                )
+            })
+        })
+    })
 })

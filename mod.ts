@@ -17,6 +17,7 @@ type InternalHasher = {
 
 export interface Hasher {
     reset: () => Hasher
+    reseed: (seed: Uint8Array) => Hasher
     update: (data: Data) => Hasher
     digest: (format?: string) => Digests
     hash: (data: Data, format?: string) => Digests
@@ -41,6 +42,11 @@ class XXHasher implements Hasher {
         this.memory.set(this.seed)
         this.internal.Hash_Init()
         return this
+    }
+
+    reseed(seed: Uint8Array) {
+        this.seed = seed
+        return this.reset()
     }
 
     update(data: Data) {
