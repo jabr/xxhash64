@@ -5,7 +5,7 @@ A fast, simple xxHash64 (and XXH3) implementation in TypeScript/WASM.
 ## Example
 
 ```ts
-import * as XXH64 from "https://deno.land/x/xxhash64@1.1.0/mod.ts"
+import * as XXH64 from "https://deno.land/x/xxhash64/mod.ts"
 
 let h = await XXH64.create()
 h.update('abc')
